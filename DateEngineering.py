@@ -63,12 +63,6 @@ df.groupBy("age").pivot("marital").count().orderBy("age").display()
 
 # COMMAND ----------
 
-#droping some columns that i dont find usfull
-
-df.drop("defult", "day","duration","campagin")
-
-# COMMAND ----------
-
 #window function 
 window = Window.partitionBy("job").orderBy("age")
 df.withColumn("avg", F.avg("balance").over(window))\
@@ -82,11 +76,7 @@ df.rollup("age","job","marital","balance").agg(F.avg("balance"), F.sum("balance"
 # COMMAND ----------
 
 #cube with agg
-df.cube("age","job","marital","balance").agg(F.sum("balance"),F.avg("balance")).orderBy("age").display()#CHECK LATER!
-
-# COMMAND ----------
-
-#df.isna().sum()
+df.cube("age","job","marital","balance").agg(F.sum("balance"),F.avg("balance")).orderBy("age").display()
 
 # COMMAND ----------
 
@@ -136,10 +126,10 @@ from pyspark.ml import Pipeline
 indexers = [StringIndexer(inputCol=col, outputCol=col + "_index", handleInvalid="skip") for col in catColumns]
 
 # Create a list of columns to one-hot encode (columns that have been indexed)
-encodeCols = [indexer.getOutputCol() for indexer in indexers]
+encode_cols = [indexer.getOutputCol() for indexer in indexers]
 
 # Create OneHotEncoder for the indexed columns
-encoder = OneHotEncoder(inputCols=encodeCols, outputCols=[col + "_encoded" for col in encodeCols])
+encoder = OneHotEncoder(inputCols=encode_cols, outputCols=[col + "_encoded" for col in encode_cols])
 
 # Define a pipeline to chain the transformations
 pipeline = Pipeline(stages=indexers + [encoder])
@@ -149,33 +139,3 @@ encoded_df = pipeline.fit(df).transform(df)
 
 # Show the resulting DataFrame with one-hot encoded columns
 encoded_df.display()
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-#new dataframe
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC
-# MAGIC /* Query the created temp table in a SQL cell */
-# MAGIC
-# MAGIC select * from `bank_csv`
-
-# COMMAND ----------
-
-# With this registered as a temp view, it will only be available to this particular notebook. If you'd like other users to be able to query this table, you can also create a table from the DataFrame.
-# Once saved, this table will persist across cluster restarts as well as allow various users across different notebooks to query this data.
-# To do so, choose your table name and uncomment the bottom line.
-
-permanent_table_name = "bank_csv"
-
-# df.write.format("parquet").saveAsTable(permanent_table_name)
-
-# COMMAND ----------
-
-
